@@ -1,0 +1,45 @@
+// Definisikan gaya basemap 
+const basemapStreet = 'https://basemap.mapid.io/styles/street-2d-building/style.json?key=69a8edeffdb1d3dbc8b3022c'; [cite: 1, 60]
+const basemapDark = 'https://basemap.mapid.io/styles/dark/style.json?key=69a8edeffdb1d3dbc8b3022c'; [cite: 1, 61]
+const basemapSatellite = 'https://basemap.mapid.io/styles/satellite/style.json?key=69a8edeffdb1d3dbc8b3022c'; [cite: 1, 62]
+
+// Inisialisasi peta di Bandung 
+const map = new maplibregl.Map({
+    container: 'map', // Harus sama dengan id di HTML [cite: 1, 65]
+    style: basemapStreet, [cite: 1, 66]
+    center: [107.605743, -6.916823], [cite: 1, 67]
+    zoom: 12 [cite: 1, 68]
+});
+
+// URL Data GeoJSON 
+const url_apartemen = 'https://geoserver.mapid.io/layers_new/get_layer?api_key=7b8019aa264248e89e3fd5b27253132f&layer_id=69ace1b8643f7636a769ce7c&project_id=69ab9fb96c69e6252868efaf'; [cite: 1, 71]
+
+map.on('load', () => {
+    async function loadData() {
+        const response = await fetch(url_apartemen); [cite: 1, 77]
+        const data = await response.json(); [cite: 1, 79]
+
+        map.addSource('apartemen', { type: 'geojson', data: data }); [cite: 1, 84, 85]
+        map.addLayer({
+            id: 'apartemen-layer',
+            source: 'apartemen',
+            type: 'circle',
+            paint: {
+                'circle-color': '#F227F5', [cite: 1, 94]
+                'circle-radius': 5 [cite: 1, 95]
+            },
+            layout: { 'visibility': 'visible' } [cite: 1, 100]
+        });
+    }
+    loadData(); [cite: 1, 150]
+});
+
+// Fungsi Switcher agar tombol di HTML berfungsi 
+window.updateStyleToStreet = () => map.setStyle(basemapStreet); [cite: 1, 183]
+window.updateStyleToSatellite = () => map.setStyle(basemapSatellite); [cite: 1, 175]
+window.updateStyleToDark = () => map.setStyle(basemapDark); [cite: 1, 179]
+
+window.toggleLayerApartemen = () => {
+    const visibility = map.getLayoutProperty('apartemen-layer', 'visibility'); [cite: 1, 188]
+    map.setLayoutProperty('apartemen-layer', 'visibility', visibility === 'visible' ? 'none' : 'visible'); [cite: 1, 193]
+};

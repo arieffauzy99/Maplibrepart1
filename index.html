@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGIS MAPID - Bootcamp</title>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Pastikan peta memiliki tinggi yang terlihat */
+        #map { height: 100vh; width: 100%; }
+    </style>
+</head>
+
+<body class="m-0 p-0 overflow-hidden">
+    <div class="flex h-screen">
+        <aside class="w-[350px] bg-white z-20 shadow-xl p-4 overflow-y-auto">
+            <h1 class="text-xl font-bold mb-4 text-blue-600">GIS TUGAS MAPID</h1>
+            
+            <section class="mb-6">
+                <h2 class="font-bold border-b mb-3">Basemap Switcher</h2>
+                <div class="flex flex-col gap-2">
+                    <button onclick="updateStyleToStreet()" class="p-2 border rounded hover:bg-gray-100">Mapid Street</button>
+                    <button onclick="updateStyleToSatellite()" class="p-2 border rounded hover:bg-gray-100">Mapid Satellite</button>
+                    <button onclick="updateStyleToDark()" class="p-2 border rounded hover:bg-gray-100">Mapid Dark</button>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="font-bold border-b mb-3 text-purple-600">Toggle Layer</h2>
+                <button onclick="toggleLayerApartemen()" class="w-full p-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                    Toggle Layer Apartemen
+                </button>
+            </section>
+        </aside>
+
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // Konfigurasi URL Basemap
+        const basemapStreet = 'https://basemap.mapid.io/styles/street-2d-building/style.json?key=69a8edeffdb1d3dbc8b3022c';
+        const basemapDark = 'https://basemap.mapid.io/styles/dark/style.json?key=69a8edeffdb1d3dbc8b3022c';
+        const basemapSatellite = 'https://basemap.mapid.io/styles/satellite/style.json?key=69a8edeffdb1d3dbc8b3022c';
+
+        // Inisialisasi Peta
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: basemapStreet,
+            center: [107.605743, -6.916823], // Bandung
+            zoom: 12
+        });
+
+        // URL Data API
+        const url_apartemen = 'https://geoserver.mapid.io/layers_new/get_layer?api_key=7b8019aa264248e89e3fd5b27253132f&layer_id=69ace1b8643f7636a769ce7c&project_id=69ab9fb96c69e6252868efaf';
+
+        map.on('load', async () => {
+            // Memuat Data Apartemen
+            const response = await fetch(url_apartemen);
+            const data = await response.json();
+
+            map.addSource('apartemen', { type: 'geojson', data: data }); //
+            map.addLayer({ //
+                id: 'apartemen-layer',
+                source: 'apartemen',
+                type: 'circle',
+                paint: {
+                    'circle-color': '#F227F5', //
+                    'circle-radius': 6,
+                    'circle-stroke-width': 1,
+                    'circle-stroke-color': '#000000'
+                },
+                layout: { 'visibility': 'visible' }
+            });
+        });
+
+        // Fungsi Basemap Switcher
+        function updateStyleToStreet() { map.setStyle(basemapStreet); }
+        function updateStyleToSatellite() { map.setStyle(basemapSatellite); }
+        function updateStyleToDark() { map.setStyle(basemapDark); }
+
+        // Fungsi Toggle Layer
+        function toggleLayerApartemen() {
+            const visibility = map.getLayoutProperty('apartemen-layer', 'visibility');
+            const nextState = visibility === 'visible' ? 'none' : 'visible';
+            map.setLayoutProperty('apartemen-layer', 'visibility', nextState);
+        }
+    </script>
+</body>
+</html>
